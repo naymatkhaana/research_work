@@ -21,6 +21,7 @@ if __name__ == '__main__':
     # basic config
     parser.add_argument('--task_name', type=str, required=True, default='long_term_forecast',
                         help='task name, options:[long_term_forecast, short_term_forecast, imputation, classification, anomaly_detection]')
+    parser.add_argument('--with_retrain', type=int, required=True, default=0, help='status')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
     parser.add_argument('--model', type=str, required=True, default='Autoformer',
@@ -36,6 +37,8 @@ if __name__ == '__main__':
     parser.add_argument('--freq', type=str, default='h',
                         help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
     parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
+    parser.add_argument('--num_train', type=int, default=914, help='status') #1025
+    parser.add_argument('--num_test', type=int, default=228, help='status') #118
 
     # forecasting task
     parser.add_argument('--seq_len', type=int, default=96, help='input sequence length')
@@ -83,6 +86,7 @@ if __name__ == '__main__':
                         help='down sampling method, only support avg, max, conv')
     parser.add_argument('--seg_len', type=int, default=48,
                         help='the length of segmen-wise iteration of SegRNN')
+    parser.add_argument('--stride', type=int, default=8, help='stride')
 
     # optimization
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
@@ -162,7 +166,43 @@ if __name__ == '__main__':
     else:
         Exp = Exp_Long_Term_Forecast
 
-    if args.is_training:
+
+
+    if args.with_retrain:
+        for ii in range(args.itr):
+            # setting record of experiments
+            exp = Exp(args)  # set experiments
+            setting = '{}_{}_{}_{}_ft{}_sl{}_ll{}_pl{}_dm{}_nh{}_el{}_dl{}_df{}_expand{}_dc{}_fc{}_eb{}_dt{}_{}_{}'.format(
+                args.task_name,
+                args.model_id,
+                args.model,
+                args.data,
+                args.features,
+                args.seq_len,
+                args.label_len,
+                args.pred_len,
+                args.d_model,
+                args.n_heads,
+                args.e_layers,
+                args.d_layers,
+                args.d_ff,
+                args.expand,
+                args.d_conv,
+                args.factor,
+                args.embed,
+                args.distil,
+                args.des, ii)
+
+            print('>>>>>>>start with retraining : {}>>>>>>>>>>>>>>>>>>>>>>>>>>'.format(setting))
+            exp.retrain(setting)
+
+            #print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+            #exp.test(setting)
+            torch.cuda.empty_cache()
+
+
+
+    elif args.is_training:
         for ii in range(args.itr):
             # setting record of experiments
             exp = Exp(args)  # set experiments

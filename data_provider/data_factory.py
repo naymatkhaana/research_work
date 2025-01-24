@@ -1,4 +1,4 @@
-from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_M4, PSMSegLoader, \
+from data_provider.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Custom_multi,  Dataset_M4, PSMSegLoader, \
     MSLSegLoader, SMAPSegLoader, SMDSegLoader, SWATSegLoader, UEAloader
 from data_provider.uea import collate_fn
 from torch.utils.data import DataLoader
@@ -9,6 +9,7 @@ data_dict = {
     'ETTm1': Dataset_ETT_minute,
     'ETTm2': Dataset_ETT_minute,
     'custom': Dataset_Custom,
+    'custom_multi': Dataset_Custom_multi,
     'm4': Dataset_M4,
     'PSM': PSMSegLoader,
     'MSL': MSLSegLoader,
@@ -25,7 +26,7 @@ def data_provider(args, flag):
 
     shuffle_flag = False if (flag == 'test' or flag == 'TEST') else True
     drop_last = False
-    batch_size = args.batch_size
+    batch_size = args.batch_size if flag != 'test' else 1
     freq = args.freq
 
     if args.task_name == 'anomaly_detection':

@@ -18,11 +18,15 @@ class FlattenHead(nn.Module):
         super().__init__()
         self.n_vars = n_vars
         self.flatten = nn.Flatten(start_dim=-2)
+        #print("taregt_window::::::::::",target_window)
+        #print("nf::::::::::",nf)
         self.linear = nn.Linear(nf, target_window)
         self.dropout = nn.Dropout(head_dropout)
 
     def forward(self, x):  # x: [bs x nvars x d_model x patch_num]
+        #print("x.shape::::::::::::::",x.shape)
         x = self.flatten(x)
+        #print("x.shape::::::::::::::",x.shape)
         x = self.linear(x)
         x = self.dropout(x)
         return x
@@ -42,6 +46,8 @@ class Model(nn.Module):
         self.task_name = configs.task_name
         self.seq_len = configs.seq_len
         self.pred_len = configs.pred_len
+        patch_len = configs.patch_len
+        stride = configs.stride
         padding = stride
 
         # patching and embedding
@@ -67,6 +73,8 @@ class Model(nn.Module):
         # Prediction Head
         self.head_nf = configs.d_model * \
                        int((configs.seq_len - patch_len) / stride + 2)
+        #print("self.head_nf:::::::::::",self.head_nf)
+
         if self.task_name == 'long_term_forecast' or self.task_name == 'short_term_forecast':
             self.head = FlattenHead(configs.enc_in, self.head_nf, configs.pred_len,
                                     head_dropout=configs.dropout)
@@ -91,15 +99,17 @@ class Model(nn.Module):
         x_enc = x_enc.permute(0, 2, 1)
         # u: [bs * nvars x patch_num x d_model]
         enc_out, n_vars = self.patch_embedding(x_enc)
+        #print("enc_out.shape after patch embedding::::::::::::::",enc_out.shape)
 
         # Encoder
         # z: [bs * nvars x patch_num x d_model]
         enc_out, attns = self.encoder(enc_out)
         # z: [bs x nvars x patch_num x d_model]
         enc_out = torch.reshape(
-            enc_out, (-1, n_vars, enc_out.shape[-2], enc_out.shape[-1]))
+            enc_out, (-1, n_vars, int(enc_out.shape[-2]), enc_out.shape[-1]))
         # z: [bs x nvars x d_model x patch_num]
         enc_out = enc_out.permute(0, 1, 3, 2)
+        #print("enc_out.shape::::::::::::::",enc_out.shape)
 
         # Decoder
         dec_out = self.head(enc_out)  # z: [bs x nvars x target_window]

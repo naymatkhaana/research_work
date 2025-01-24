@@ -1,7 +1,7 @@
 import os
 import torch
 from models import Autoformer, Transformer, TimesNet, Nonstationary_Transformer, DLinear, FEDformer, \
-    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, MICN, Crossformer, FiLM, iTransformer, \
+    Informer, LightTS, Reformer, ETSformer, Pyraformer, PatchTST, PatchTST2, PatchTST_sep, MICN, Crossformer, FiLM, iTransformer, \
     Koopa, TiDE, FreTS, TimeMixer, TSMixer, SegRNN, MambaSimple, TemporalFusionTransformer, SCINet, PAttn, TimeXer
 
 
@@ -20,6 +20,8 @@ class Exp_Basic(object):
             'Reformer': Reformer,
             'ETSformer': ETSformer,
             'PatchTST': PatchTST,
+            'PatchTST2': PatchTST2,
+            'PatchTST_sep': PatchTST_sep,
             'Pyraformer': Pyraformer,
             'MICN': MICN,
             'Crossformer': Crossformer,

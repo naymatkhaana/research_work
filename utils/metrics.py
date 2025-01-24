@@ -12,11 +12,11 @@ def CORR(pred, true):
 
 
 def MAE(pred, true):
-    return np.mean(np.abs(true - pred))
+    return np.mean(np.abs(pred - true))
 
 
 def MSE(pred, true):
-    return np.mean((true - pred) ** 2)
+    return np.mean((pred - true) ** 2)
 
 
 def RMSE(pred, true):
@@ -24,18 +24,31 @@ def RMSE(pred, true):
 
 
 def MAPE(pred, true):
-    return np.mean(np.abs((true - pred) / true))
+    return np.mean(np.abs((pred - true) / true))
 
 
 def MSPE(pred, true):
-    return np.mean(np.square((true - pred) / true))
+    return np.mean(np.square((pred - true) / true))
+
+def SMAPE(pred, true):
+    return 200*np.mean(np.abs( pred - true)  / ( np.abs(true) + np.abs(pred) )  )
+
+def SMAPE_2(pred, true):
+    return (200/pred.size)*np.linalg.norm( (pred - true)  / ( np.abs(true) + np.abs(pred) ) , ord=1 )
 
 
-def metric(pred, true):
+def metric(pred, true, preds_inverse,trues_inverse):
+
+
     mae = MAE(pred, true)
+    mae_inv = MAE(preds_inverse, trues_inverse )
+
     mse = MSE(pred, true)
     rmse = RMSE(pred, true)
-    mape = MAPE(pred, true)
+    mape = MAPE( pred, true)
     mspe = MSPE(pred, true)
+    smape = SMAPE(preds_inverse, trues_inverse )
 
-    return mae, mse, rmse, mape, mspe
+    return mae, mse, rmse, mape, mspe, smape, mae_inv
+
+
